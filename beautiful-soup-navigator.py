@@ -26,11 +26,13 @@ from bs4 import BeautifulSoup
 import urllib
 import json
 import xlsxwriter
+import csv
 
 pre_ahref_tags = []
 ahref_tags = []
 date_and_time = []
 soup = []
+title = []
 description = []
 location = []
 row = 0
@@ -60,7 +62,7 @@ for i in range(len(pre_ahref_tags)):
 	ahref_tags.append(pre_ahref_tags[i][0]['href'])
 
 for i in range(len(ahref_tags)):
-	event_dict['Title'].append(content[i])
+	title.append(content[i])
 	event_page = urllib.urlopen('https://nolecentral.dsa.fsu.edu/%s' % (ahref_tags[i])).read()
 	event_code = BeautifulSoup(event_page)
 	location.append(event_code.find_all('h3', class_ = '__sectionmargintophalf')[0].text)
@@ -79,24 +81,27 @@ for i in range(len(ahref_tags)):
 	description[i] = description[i].replace("\t", "")
 	description[i] = str(description[i])"""
 
+event_dict['Title'].append(title)
 event_dict['Location'].append(location)
 event_dict['Date and Time'].append(date_and_time)
-print event_dict
+for i in range(len(location)):
+	if 'Huge' in location[i]:
+		location[i] = 'HCB Classroom Building)'
+	if 'Thagard' in location[i]:
+		location[i] = '960 Learning Way, Tallahassee, FL 32306'
+	if ('Florida State University' not in location[i]):
+		location[i] += ', Florida State University'
+
 
 with open('event_data.json', 'w') as f:
      json.dump(event_dict, f)
-	
-"""workbook = xlsxwriter.Workbook('data.xlsx')
-worksheet = workbook.add_worksheet()
 
-for key in event_dict.keys():
-    row += 1
-    worksheet.write(row, col,     key)
-    for item in event_dict[key]:
-        worksheet.write(row, col + 1, item)
-        row += 1
 
-workbook.close()"""
+f = open('dict.csv','wb')
 
-"""for i in location:
-	print(i.a.string)"""
+writer = csv.writer(open('dict.csv', 'wb'))
+writer.writerow(['Date and Time', 'Location', 'Title'])
+for i in range(len(title)):
+	writer.writerow([date_and_time[i], location[i], title[i]])
+f.close()
+
