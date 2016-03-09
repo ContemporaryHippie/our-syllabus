@@ -35,12 +35,14 @@ soup = []
 title = []
 description = []
 location = []
+address = []
 row = 0
 col = 0
 event_dict ={
 	'Title': [],
-	'Location': [],
+	'Location Title': [],
 	'Date and Time': [],
+	'Address': [],
 	#'Description': [],
 }
 
@@ -61,7 +63,7 @@ for i in content:
 for i in range(len(pre_ahref_tags)):
 	ahref_tags.append(pre_ahref_tags[i][0]['href'])
 
-for i in range(len(ahref_tags)):
+for i in range(len(ahref_tags)): #parses through each individual event page
 	title.append(content[i])
 	event_page = urllib.urlopen('https://nolecentral.dsa.fsu.edu/%s' % (ahref_tags[i])).read()
 	event_code = BeautifulSoup(event_page)
@@ -75,26 +77,21 @@ for i in range(len(ahref_tags)):
 	date_and_time[i] = date_and_time[i].replace("\r", "")
 	date_and_time[i] = date_and_time[i].replace("\t", "")
 	date_and_time[i] = str(date_and_time[i])
-	"""description.append(event_code.find_all("div", class_ = "event-info-description __sectionmargintophalf")[0].text)
-	description[i] = description[i].replace("\n", "")
-	description[i] = description[i].replace("\r", "")
-	description[i] = description[i].replace("\t", "")
-	description[i] = str(description[i])"""
-
-event_dict['Title'].append(title)
-event_dict['Location'].append(location)
-event_dict['Date and Time'].append(date_and_time)
-for i in range(len(location)):
-	if 'Huge' in location[i]:
-		location[i] = 'HCB Classroom Building)'
-	if 'Thagard' in location[i]:
-		location[i] = '960 Learning Way, Tallahassee, FL 32306'
-	if ('Florida State University' not in location[i]):
-		location[i] += ', Florida State University'
 
 
-with open('event_data.json', 'w') as f:
-     json.dump(event_dict, f)
+address = location[:]
+for i in range(len(address)):
+	if 'Huge' in address[i]:
+		address[i] = 'HCB Classroom Building'
+	if 'Thagard' in address[i]:
+		address[i] = '960 Learning Way, Tallahassee, FL 32306'
+	if('Student Services' in address[i]):
+		address[i] = '875 Traditions Way, Tallahassee, FL 32306'
+	if ('Florida State University') not in address[i]:
+		address[i] += ', Florida State University'
+	if 'Integration' in address [i]:
+		address[i] = '30.443850, -84.298049'
+	
 
 
 f = open('dict.csv','wb')
@@ -102,6 +99,6 @@ f = open('dict.csv','wb')
 writer = csv.writer(open('dict.csv', 'wb'))
 writer.writerow(['Date and Time', 'Location', 'Title'])
 for i in range(len(title)):
-	writer.writerow([date_and_time[i], location[i], title[i]])
+	writer.writerow([date_and_time[i], address[i], title[i] + ' @ ' + location[i]])
 f.close()
 
